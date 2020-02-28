@@ -282,6 +282,10 @@ class Connection extends Component
      */
     public $dataTimeout;
     /**
+     * @var boolean
+     */
+    public $useSSL;
+    /**
      * @var integer Bitmask field which may be set to any combination of connection flags passed to [stream_socket_client()](https://www.php.net/manual/en/function.stream-socket-client.php).
      * Currently the select of connection flags is limited to `STREAM_CLIENT_CONNECT` (default), `STREAM_CLIENT_ASYNC_CONNECT` and `STREAM_CLIENT_PERSISTENT`.
      *
@@ -596,7 +600,10 @@ class Connection extends Component
             if ($this->dataTimeout !== null) {
                 stream_set_timeout($socket, $timeout = (int) $this->dataTimeout, (int) (($this->dataTimeout - $timeout) * 1000000));
             }
-            if ($this->password !== null) {
+            if ($this->useSSL) {
+                stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            }
+	    if ($this->password !== null) {
                 $this->executeCommand('AUTH', [$this->password]);
             }
             if ($this->database !== null) {
